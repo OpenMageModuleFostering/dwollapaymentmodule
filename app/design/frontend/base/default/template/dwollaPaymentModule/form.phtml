@@ -1,0 +1,8 @@
+<ul class="form-list" id="payment_form_<?php echo $this->getMethodCode() ?>" style="display:none;">
+	<?php 
+	$showDwollaLogo = Mage::getStoreConfig('payment/dwollaPaymentModule/showDwollaLogo');
+	if ($showDwollaLogo) {
+	echo "<img src=" . $this->getSkinUrl('../../dwollaPaymentModule/default/dwolla-sm-no-bg.png') . " />"; 
+	}?>
+    <li class="form-alt"><?php echo $this->getRedirectMessage() ?></li>
+</ul>

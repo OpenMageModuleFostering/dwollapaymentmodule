@@ -1,0 +1,16 @@
+{
+    "name": "OpenMageModuleFostering/DwollaPaymentModule",
+    "type": "magento-module",
+    "license": "MIT-License",
+    "homepage": "",
+    "description": "The Dwolla payment extension for Magento - quick, secure integration with the Dwolla money-moving engine.",
+    "authors": [
+    {
+        "name": "Michael Schonfeld",
+        "email": "api@dwolla.com"
+    }
+],
+    "suggest": {
+        "magento-hackathon/magento-composer-installer": "*"
+    }
+}

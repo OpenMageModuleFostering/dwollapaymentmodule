@@ -1,0 +1,100 @@
+<?php
+/**
+ * Dwolla Payment Module for Magento > 1.6
+ *
+ * @category    Dwolla
+ * @package     Dwolla_DwollaPaymentModule
+ * @copyright   Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
+ * @autor       Gordon Zheng <gordon@dwolla.com>, Michael Schonfeld <michael@dwolla.com>
+ * @version   	3.0.0alpha
+ * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
+ */
+
+// Get User Configuration
+$dwollaId = Mage::getStoreConfig('payment/dwollaPaymentModule/dwollaId');
+$apiKey = Mage::getStoreConfig('payment/dwollaPaymentModule/dwollaApiKey');
+$apiSecret = Mage::getStoreConfig('payment/dwollaPaymentModule/dwollaApiSecret');
+$testMode = Mage::getStoreConfig('payment/dwollaPaymentModule/dwollaTestMode');
+$allowGuestCheckout =  Mage::getStoreConfig('payment/dwollaPaymentModule/dwollaGuestCheckout');
+
+// Make sure we have all the information we need
+// before we continue
+if(!$dwollaId || !$apiKey || !$apiSecret) {
+	echo "The Dwolla Gateway seems to be misconfigured. Please use another payment method.";
+	break;
+}
+
+// Parsing Dwolla IDs
+function parseDwollaId($id) {
+	$id = ereg_replace("[^0-9]", "", $id);
+	$id = substr($id, 0, 3) . '-' . substr($id, 3, 3) . '-' . substr($id, 6, 4);
+
+	return $id;
+}
+
+// Grab the user's order
+$magOrderId = Mage::getSingleton('checkout/session')->getLastRealOrderId();
+$order = Mage::getModel('sales/order')->loadByIncrementId($magOrderId);
+
+$items = array();
+foreach($order->getItemsCollection() as $item) {
+	if($item->getQtyToShip() > 0) {
+		$items[] = array(
+			'Description'	=> $item->getSku() . ': ' . ($item->getDescription() ? $item->getDescription() : 'N/A'),
+			'Name'			=> $item->getName(),
+			'Price'			=> $item->getPrice(),
+			'Quantity'		=> $item->getQtyToShip()
+		);
+	}
+}
+
+// Generate a checkout ID from Dwolla
+$dwollaJson = array(
+	'key'		=> $apiKey,
+	'secret'	=> $apiSecret,
+	'redirect'	=> Mage::getUrl('dwollaPaymentModule/payment/response', array('_secure' => true)),
+	'orderId'	=> $magOrderId,
+	'test'		=> $testMode ? 'true' : 'false',
+	'allowfundingsources'	=> $allowGuestCheckout ? 'true' : 'false',
+	'purchaseOrder'			=> array(
+		'destinationId'	=> parseDwollaId($dwollaId),
+		'discount'		=> $order->getDiscountAmount(),
+		'shipping'		=> $order->getShippingAmount(),
+		'tax'			=> $order->getTaxAmount(),
+		'total'			=> $order->getGrandTotal(),
+		'orderItems'	=> $items
+	)
+);
+
+$ch = curl_init("https://www.dwolla.com/payment/request");
+curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json")); 
+curl_setopt($ch, CURLOPT_POST, 1);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($dwollaJson));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+$output = json_decode(curl_exec($ch), TRUE);
+curl_close($ch);
+
+// Make sure we got a checkout ID
+if(!$output['CheckoutId']) {
+	$debug = print_r($dwollaJson, TRUE);
+	$message = "Something went wrong while redirecting the customer to Dwolla's gateway. Here's what Dwolla said: {$output['Message']} ... Contact support@dwolla.com with the following information: Debug information: {$debug}";
+	$order->setState(Mage_Sales_Model_Order::STATE_HOLDED, true, $message);
+	$order->save();
+
+	echo "Something went wrong. Dwolla said: {$output['Message']}. Contact the store owner for more information.";
+	break;
+}
+$dwollaUrl = "https://www.dwolla.com/payment/checkout/{$output['CheckoutId']}";
+
+// Redirect to Dwolla's off-site payment gateway
+header("Location: {$dwollaUrl}");
+?>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Redirecting to Dwolla</title>
+<meta http-equiv="REFRESH" content="0;url=<?php echo $dwollaUrl; ?>"></HEAD>
+<BODY>
+Redirecting you to the Dwolla Off-Site Gateway now. Click <a href="<?php echo $dwollaUrl; ?>">here</a> if you are not automatically redirected.
+</BODY>
+</HTML>
