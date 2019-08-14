@@ -2,7 +2,7 @@
 <config>
   <modules>
     <Dwolla_DwollaPaymentModule>
-      <version>3.0.0</version>
+      <version>3.0.1</version>
     </Dwolla_DwollaPaymentModule>
   </modules>
   <global>

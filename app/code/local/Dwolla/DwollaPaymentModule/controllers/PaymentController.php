@@ -6,7 +6,7 @@
  * @package     Dwolla_DwollaPaymentModule
  * @copyright   Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
  * @autor       Gordon Zheng <gordon@dwolla.com>, Michael Schonfeld <michael@dwolla.com>
- * @version   	3.0.0alpha
+ * @version   	3.0.1
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
@@ -95,7 +95,7 @@ class Dwolla_DwollaPaymentModule_PaymentController extends Mage_Core_Controller_
 		$orderId = $this->getRequest()->orderId;
 		$checkoutId = $this->getRequest()->checkoutId;
 		$transactionId = $this->getRequest()->transaction;
-		$amount = $this->getRequest()->amount;
+		$amount = number_format($this->getRequest()->amount, 2);
 		$signature = $this->getRequest()->signature;
 
 		// Check if the user cancelled, or

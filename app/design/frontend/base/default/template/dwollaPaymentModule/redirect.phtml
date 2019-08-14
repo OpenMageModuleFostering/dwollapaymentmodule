@@ -66,7 +66,7 @@ $dwollaJson = array(
 	)
 );
 
-$ch = curl_init("https://www.dwolla.com/payment/request");
+$ch = curl_init("https://www.dwolla.com/payment/requesttt");
 curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json")); 
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($dwollaJson));
@@ -76,6 +76,31 @@ curl_close($ch);
 
 // Make sure we got a checkout ID
 if(!$output['CheckoutId']) {
+	$post_request = $dwollaJson;
+	// remove secret from post request dump:
+	unset($post_request['secret']);
+	
+	// notify Dwolla's error logging server of this fatal error:
+	$errorJson = array(
+		'request'   => json_encode($post_request),
+		'response'  => json_encode($output),
+		'orderId'   => json_encode($magOrderId),
+		'platform'	=> 'Magento'
+	);
+
+	echo $errorJson['response'];
+	echo $errorJson['orderId'];
+	echo $errorJson['platform'];
+
+	$ch = curl_init('http://redalert.dwollalabs.com');
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json")); 
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($errorJson));
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	$errlog = curl_exec($ch);
+	curl_close($ch);
+	
+	// log error in order details:
 	$debug = print_r($dwollaJson, TRUE);
 	$message = "Something went wrong while redirecting the customer to Dwolla's gateway. Here's what Dwolla said: {$output['Message']} ... Contact support@dwolla.com with the following information: Debug information: {$debug}";
 	$order->setState(Mage_Sales_Model_Order::STATE_HOLDED, true, $message);

@@ -6,7 +6,7 @@
  * @package     Dwolla_DwollaPaymentModule
  * @copyright   Copyright (c) 2012 Dwolla Inc. (http://www.dwolla.com)
  * @autor       Gordon Zheng <gordon@dwolla.com>, Michael Schonfeld <michael@dwolla.com>
- * @version   	3.0.0alpha
+ * @version   	3.0.1
  * @license     http://opensource.org/licenses/osl-3.0.php  Open Software License (OSL 3.0)
  */
 
