@@ -66,7 +66,7 @@ $dwollaJson = array(
 	)
 );
 
-$ch = curl_init("https://www.dwolla.com/payment/requesttt");
+$ch = curl_init("https://www.dwolla.com/payment/request");
 curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json")); 
 curl_setopt($ch, CURLOPT_POST, 1);
 curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($dwollaJson));
@@ -87,10 +87,6 @@ if(!$output['CheckoutId']) {
 		'orderId'   => json_encode($magOrderId),
 		'platform'	=> 'Magento'
 	);
-
-	echo $errorJson['response'];
-	echo $errorJson['orderId'];
-	echo $errorJson['platform'];
 
 	$ch = curl_init('http://redalert.dwollalabs.com');
 	curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json")); 
