@@ -1,5 +1,5 @@
 {
-    "name": "OpenMageModuleFostering\/DwollaPaymentModule",
+    "name": "openmage-module-fostering\/dwollapaymentmodule",
     "type": "magento-module",
     "license": "MIT-License",
     "homepage": "",
